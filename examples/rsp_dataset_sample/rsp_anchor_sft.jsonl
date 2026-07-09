@@ -1,0 +1,1 @@
+{"id":"sample_anchor::unit_001","row_type":"anchor_sft","domain":"unit_conversion","source_domain":"unit_conversion","prompt":"Convert 2 hours to minutes. Please put your final answer inside `\\boxed{}`.","completion":"2 hours equals 2 * 60 minutes, so the answer is \\boxed{120}","final_answer":"120","source":"public_schema_sample","source_id":"unit_001","sample_weight":1.0}

@@ -1,0 +1,91 @@
+{
+  "schema": "rsp-schema-v1",
+  "candidate_id": "rsp-rule-selection-post-training",
+  "current_minimum_goal_achieved": "no",
+  "submission_allowed": false,
+  "gpu_execution_allowed": false,
+  "row_types": {
+    "anchor_sft": {
+      "required_fields": [
+        "id",
+        "row_type",
+        "domain",
+        "prompt",
+        "completion",
+        "final_answer",
+        "source",
+        "sample_weight"
+      ],
+      "purpose": "preserve huikang-style deterministic traces"
+    },
+    "decision_sft": {
+      "required_fields": [
+        "id",
+        "row_type",
+        "domain",
+        "prompt",
+        "completion",
+        "final_answer",
+        "decision_points",
+        "source",
+        "sample_weight"
+      ],
+      "purpose": "emphasize correct rule-selection tokens"
+    },
+    "decision_preference": {
+      "required_fields": [
+        "id",
+        "row_type",
+        "domain",
+        "prompt",
+        "chosen",
+        "rejected",
+        "chosen_answer",
+        "rejected_answer",
+        "decision_points",
+        "negative_type",
+        "source",
+        "sample_weight"
+      ],
+      "purpose": "prefer verified correct decisions over plausible wrong branches"
+    }
+  },
+  "domains": [
+    "bit_manipulation",
+    "equation_numeric",
+    "equation_numeric_symbolic",
+    "cryptarithm",
+    "cipher",
+    "gravity",
+    "numeral",
+    "numeral_system",
+    "unit_conversion"
+  ],
+  "adapter_contract": {
+    "rank": 32,
+    "alpha": 32,
+    "dropout": 0.0,
+    "max_seq_length": 8192,
+    "precision": "bf16",
+    "completion_only_loss": true,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "in_proj",
+      "out_proj",
+      "up_proj",
+      "down_proj",
+      "lm_head"
+    ]
+  },
+  "minimum_training_gate": {
+    "anchor_sft_min_rows": 7000,
+    "decision_sft_min_rows": 1000,
+    "decision_preference_min_rows": 1000,
+    "max_preference_to_anchor_ratio": 0.35,
+    "requires_adapter_smoke_load": true,
+    "requires_no_eval_overlap": true
+  }
+}

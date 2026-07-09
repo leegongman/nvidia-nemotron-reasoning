@@ -1,0 +1,52 @@
+{
+  "candidate": "rsp-rule-selection-post-training",
+  "current_minimum_goal_achieved": "no",
+  "submission_allowed": false,
+  "purpose": "Record the public model and workflow constraints used by the RSP training package.",
+  "competition": {
+    "objective": "Adapt NVIDIA Nemotron for hidden multi-domain reasoning tasks with boxed final answers.",
+    "domains": [
+      "bit_manipulation",
+      "equation_numeric",
+      "cipher",
+      "gravity",
+      "unit_conversion",
+      "numeral",
+      "cryptarithm"
+    ],
+    "submission_as_validation_allowed": false
+  },
+  "model": {
+    "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+    "adapter_method": "rank-32 LoRA",
+    "max_sequence_length": 8192,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "in_proj",
+      "out_proj",
+      "up_proj",
+      "down_proj",
+      "lm_head"
+    ]
+  },
+  "method": {
+    "name": "Rule Selection Post-Training",
+    "row_families": [
+      "anchor_sft",
+      "decision_sft",
+      "decision_preferences"
+    ],
+    "training_phases": [
+      "weighted completion-only SFT",
+      "pairwise rule-selection preference learning"
+    ],
+    "not_claimed": [
+      "final leaderboard score",
+      "final selected adapter",
+      "winning solution"
+    ]
+  }
+}

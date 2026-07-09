@@ -1,0 +1,48 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+*.ipynb
+!notebooks/**/*.ipynb
+
+.env
+.env.*
+kaggle.json
+credentials.json
+*.pem
+
+.hf_cache/
+.dataset_deps/
+outputs/
+nemotron_lora_pipeline/outputs/
+wandb/
+runs/
+
+*.zip
+*.tar.gz
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.jsonl
+*.csv
+*.parquet
+*.log
+!examples/**/*.jsonl
+!samples/**/*.jsonl
+
+data/
+!data/README.md
+!data/.gitkeep
+
+데이터/
+체크포인트/
+실전 FT/
+유저 정보/
+discussion 방식 데이터/
+무제 폴더/
+STaR/
+specs/
+vast/
+competition/
+논문/

@@ -1,0 +1,18 @@
+{
+  "schema": "rsp-dataset-manifest-v1",
+  "candidate_id": "rsp-rule-selection-post-training-sample",
+  "current_minimum_goal_achieved": "no",
+  "submission_allowed": false,
+  "gpu_execution_allowed": false,
+  "files": {
+    "anchor_sft": "rsp_anchor_sft.jsonl",
+    "decision_sft": "rsp_decision_sft.jsonl",
+    "decision_preferences": "rsp_decision_preferences.jsonl"
+  },
+  "counts": {
+    "anchor_sft": 1,
+    "decision_sft": 1,
+    "decision_preferences": 1
+  },
+  "note": "Schema sample only. The full verifier intentionally requires larger row counts."
+}
