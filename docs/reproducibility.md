@@ -1,43 +1,91 @@
 # Reproducibility
 
+이 문서는 clean public repo에서 어디까지 재현 가능한지와, 어떤 외부 artifact가 필요한지 설명합니다.
+
 ## Scope
 
-This project is reproducible at the package and verification level. A reader should be able to inspect the dataset package, run static gates, and understand how the adapter training run is launched.
+현재 repo가 재현 가능하게 제공하는 범위:
 
-Full model training and evaluation require external assets that are intentionally not stored in the repository:
+- RSP dataset schema
+- small example dataset
+- dataset static verification
+- train shell static verification
+- rank-32 LoRA trainer dry-run path
+- external GPU payload build path
+- adapter zip structure validation
+- selected teammate source/code inspection under `team/minjaechoics/`
 
-- NVIDIA Nemotron base model weights.
-- CUDA-compatible GPU environment.
-- Challenge data and local evaluation setup.
-- Dependency wheels required by the model runtime.
-- Sufficient disk space for model caches and adapter outputs.
+현재 repo만으로 재현할 수 없는 범위:
 
-## Required Inputs
+- full Huikang snapshot preprocessing
+- full private/generated datasets
+- final selected adapter
+- full NVIDIA 30B model training
+- final leaderboard score
+- teammate historical runs that depend on excluded local datasets/adapters/results
 
-| Input | Purpose |
-| --- | --- |
-| `data/rsp_dataset/rsp_anchor_sft.jsonl` | Anchor completion-only SFT data |
-| `data/rsp_dataset/rsp_decision_sft.jsonl` | Rule-trace completion-only SFT data |
-| `data/rsp_dataset/rsp_decision_preferences.jsonl` | Chosen/rejected preference data |
-| `data/rsp_dataset/rsp_manifest.json` | Dataset manifest and counts |
-| Nemotron model path or model ID | Tokenizer and model loading |
-| Compatible CUDA/PyTorch stack | GPU training |
+## Required External Inputs
 
-If the public repository does not include full JSONL data, publish a small sample plus instructions for regenerating or obtaining the private/full data package. The recommended public convention is to stage the full dataset under `data/rsp_dataset` while keeping that directory out of Git.
+| Input | Purpose | Public repo status |
+| --- | --- | --- |
+| Nemotron base model | tokenizer/model loading | not included |
+| Full RSP dataset | actual training | not included |
+| Huikang snapshot | source analysis/replay reference | external Kaggle dataset |
+| Competition `train.csv` | task/domain analysis | external Kaggle competition file |
+| Hidden test set | actual scoring | not available locally |
+| CUDA/PyTorch runtime | GPU training | environment-dependent |
+| Dependency wheels | Kaggle/offline runtime support | not included |
+| Eval split/setup | local evidence collection | not fully included |
+| Teammate local artifacts | historical weak-domain experiments | selected code included, data/checkpoints/results excluded |
 
-## Static Verification
+## Competition Files
 
-Run dataset verification:
+Kaggle official files observed through the competition API:
+
+| File | Public rows | Fields | Reproducibility note |
+| --- | ---: | --- | --- |
+| `train.csv` | 9,500 | `id`, `prompt`, `answer` | can be downloaded from Kaggle by participants |
+| `test.csv` | 3 | `id`, `prompt` | sample only; scoring replaces it with several hundred hidden problems |
+
+The public `test.csv` should not be used as final evidence. It is useful for checking submission mechanics, prompt formatting, and boxed-answer extraction behavior.
+
+## Dataset Staging
+
+Public repo convention:
+
+```text
+data/rsp_dataset/
+├── rsp_anchor_sft.jsonl
+├── rsp_decision_sft.jsonl
+├── rsp_decision_preferences.jsonl
+└── rsp_manifest.json
+```
+
+`data/`는 GitHub에 full data를 올리지 않는 전제로 `.gitignore` 처리합니다. Public sample은 `examples/rsp_dataset_sample/`에 있습니다. 이 sample은 schema preview용이며, full row-count gate를 통과하도록 설계된 dataset은 아닙니다.
+
+Build command:
 
 ```bash
 DATASET_DIR=data/rsp_dataset
 
+python build_rsp_dataset.py \
+  --anchor /path/to/anchor.jsonl \
+  --equation /path/to/equation.jsonl \
+  --target-repair /path/to/target_repair_rows.jsonl \
+  --output-dir "$DATASET_DIR"
+```
+
+## Static Verification
+
+Dataset verification:
+
+```bash
 python verify_rsp_dataset.py \
   --dataset-dir "$DATASET_DIR" \
   --json-output "$DATASET_DIR/rsp_verification.json"
 ```
 
-Run train-shell verification:
+Train shell verification:
 
 ```bash
 python verify_rsp_train_shell.py \
@@ -46,7 +94,7 @@ python verify_rsp_train_shell.py \
   --json-output "$DATASET_DIR/rsp_train_shell_verification.json"
 ```
 
-Expected current dataset result:
+Expected verification style:
 
 ```json
 {
@@ -58,9 +106,11 @@ Expected current dataset result:
 }
 ```
 
-## Training
+`submission_allowed=false`와 `gpu_execution_allowed=false`는 실패가 아니라 fail-closed design입니다. Dataset verification 단계에서 바로 submission 가능하다고 판단하지 않도록 설계한 것입니다.
 
-Dry-run the trainer when the tokenizer/model path is available:
+## Trainer Dry Run
+
+Model/tokenizer path가 준비되면 dry-run을 실행할 수 있습니다.
 
 ```bash
 python rsp_train_huikang_compatible.py \
@@ -69,7 +119,11 @@ python rsp_train_huikang_compatible.py \
   --dry-run
 ```
 
-Build the external GPU payload:
+Dry-run은 full training validation이 아닙니다. 목적은 argument, dataset loading, normalization path를 빠르게 확인하는 것입니다.
+
+## GPU Payload
+
+External GPU training payload build:
 
 ```bash
 python build_rsp_vast_payload.py \
@@ -78,17 +132,17 @@ python build_rsp_vast_payload.py \
   --archive outputs/rsp_vast_payload/rsp_pro6000_payload.tar.gz
 ```
 
-Launch the prepared GPU wrapper after staging the payload at the wrapper's expected workspace path in a compatible external environment:
+Training wrapper:
 
 ```bash
 bash /workspace/rsp_vast/payload/rsp_run_train_pro6000.sh
 ```
 
-The wrapper prepares a virtual environment, resolves the Nemotron model and package wheels through KaggleHub-compatible assets, runs static gates, trains the adapter, and validates the produced adapter zip. It assumes the RSP payload has already been staged under `/workspace/rsp_vast/payload`.
+이 경로는 PRO 6000-class GPU 환경을 상정합니다. T4/4-bit path는 feasibility probe로만 해석하고, final full training route로 과장하지 않습니다.
 
 ## Adapter Validation
 
-After training:
+Training 후 adapter zip이 있으면 다음을 실행합니다.
 
 ```bash
 python verify_rsp_train_shell.py \
@@ -98,40 +152,52 @@ python verify_rsp_train_shell.py \
   --json-output /path/to/rsp_post_training_adapter_gate.json
 ```
 
-Adapter validation should confirm:
+검증 항목:
 
-- `adapter_config.json` exists.
-- `adapter_model.safetensors` exists.
-- LoRA rank is 32.
-- LoRA alpha is 32.
-- LoRA dropout is 0.0.
-- Target modules match the locked Nemotron adapter contract.
-- LoRA A/B tensors are present and structurally consistent.
+- `adapter_config.json`
+- `adapter_model.safetensors`
+- LoRA rank 32
+- LoRA alpha 32
+- LoRA dropout 0.0
+- bias `none`
+- target modules match
+- LoRA A/B tensor headers structurally consistent
 
 ## Evaluation
 
-Evaluation is intentionally separate from training. Use the local evaluator only after an adapter artifact passes structure gates.
+Evaluation은 training과 분리합니다.
 
-The evaluation protocol should record:
+```bash
+bash eval/run_eval.sh
+```
 
-- Base model path.
-- Adapter artifact hash.
-- Evaluation script version.
-- Dataset or split identifier.
-- Per-domain accuracy.
-- Boxed-answer extraction behavior.
-- Any decoding parameters.
+또는 `eval/auto_evaluator.py`를 직접 실행할 수 있습니다. 실제 실행에는 base model, adapter path, eval data path, GPU runtime이 필요합니다.
 
-Do not treat a public submission as the validation loop. A submission should be made only after local evidence is complete and promoted.
+Evaluation record에는 최소한 다음을 남겨야 합니다.
+
+- base model path/hash
+- adapter zip hash
+- eval script version
+- eval data/split identifier
+- decoding parameters
+- per-domain accuracy
+- boxed-answer extraction behavior
+
+Kaggle official evaluation uses vLLM with the submitted LoRA adapter, extracts the final answer primarily from `\boxed{}`, and scores exact string match or numeric relative tolerance `1e-2`. Local evaluation should mirror these constraints as closely as possible, but local results remain separate from leaderboard results.
 
 ## Reproducibility Boundaries
 
-Current reproducibility status:
+현재 상태:
 
-- Dataset package: statically verified.
-- Train shell: statically verified.
-- GPU training: prepared but not final-score-proven in this folder.
-- Adapter selection: not finalized for RSP.
-- Leaderboard score: not claimed.
+| Area | Status |
+| --- | --- |
+| Public code inspection | supported |
+| Example dataset verification | supported |
+| Full dataset verification | requires private/full data |
+| Full GPU training | requires external model/runtime |
+| Adapter selection | not included |
+| Final leaderboard score | not claimed |
 
-The project should remain transparent about these boundaries in public documentation.
+이 repo는 “최종 점수를 즉시 재현하는 package”가 아니라, **어떤 데이터 설계와 학습 shell이 final adapter training으로 이어지는지 검증 가능한 형태로 보여주는 package**입니다.
+
+`team/minjaechoics/`는 selected source artifact만 포함합니다. 해당 scripts에는 원래 runtime의 절대 경로가 남아 있을 수 있으며, 현재 repo에서 바로 실행되는 primary path로 보지 않습니다.

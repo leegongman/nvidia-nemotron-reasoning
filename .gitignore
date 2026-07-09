@@ -10,6 +10,8 @@ __pycache__/
 kaggle.json
 credentials.json
 *.pem
+.ssh/
+authorized_keys
 
 .hf_cache/
 .dataset_deps/
@@ -17,6 +19,10 @@ outputs/
 nemotron_lora_pipeline/outputs/
 wandb/
 runs/
+**/results/
+**/logs/
+**/dryrun*/
+**/outputs/
 
 *.zip
 *.tar.gz
@@ -46,3 +52,7 @@ specs/
 vast/
 competition/
 논문/
+
+team/minjaechoics/**/dataset/
+team/minjaechoics/**/datasets/
+team/minjaechoics/**/unsloth_compiled_cache/
