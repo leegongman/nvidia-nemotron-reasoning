@@ -17,7 +17,7 @@ ROOT_FILES = [
     "rsp_schema.json",
     "build_rsp_dataset.py",
     "verify_rsp_dataset.py",
-    "rsp_train_huikang_compatible.py",
+    "rsp_train_tokenmask_compatible.py",
     "verify_rsp_train_shell.py",
     "build_rsp_train_kernel.py",
 ]

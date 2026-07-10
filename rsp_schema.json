@@ -16,7 +16,7 @@
         "source",
         "sample_weight"
       ],
-      "purpose": "preserve huikang-style deterministic traces"
+      "purpose": "preserve token/mask deterministic traces"
     },
     "decision_sft": {
       "required_fields": [

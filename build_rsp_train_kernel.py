@@ -15,7 +15,7 @@ from pathlib import Path
 
 CANDIDATE = "rsp-rule-selection-post-training"
 RUNTIME_FILES = [
-    "rsp_train_huikang_compatible.py",
+    "rsp_train_tokenmask_compatible.py",
     "verify_rsp_train_shell.py",
     "verify_rsp_dataset.py",
     "rsp_schema.json",
@@ -160,7 +160,7 @@ def main() -> int:
                 "assert verify_data.returncode == 0, verify_data.stderr\n"
                 "verify_shell = subprocess.run([\n"
                 "    sys.executable, str(RUNTIME_DIR / 'verify_rsp_train_shell.py'),\n"
-                "    '--train-script', str(RUNTIME_DIR / 'rsp_train_huikang_compatible.py'),\n"
+                "    '--train-script', str(RUNTIME_DIR / 'rsp_train_tokenmask_compatible.py'),\n"
                 "    '--dataset-verification', '/kaggle/working/rsp_dataset_verification.json',\n"
                 "    '--json-output', '/kaggle/working/rsp_train_shell_verification.json',\n"
                 "], cwd=RUNTIME_DIR, text=True, capture_output=True)\n"
@@ -172,7 +172,7 @@ def main() -> int:
                 "print('model path:', MODEL_PATH)\n"
                 "import subprocess, sys\n"
                 "cmd = [\n"
-                "    sys.executable, str(RUNTIME_DIR / 'rsp_train_huikang_compatible.py'),\n"
+                "    sys.executable, str(RUNTIME_DIR / 'rsp_train_tokenmask_compatible.py'),\n"
                 "    '--dataset-dir', str(DATASET_DIR),\n"
                 "    '--model', MODEL_PATH,\n"
                 "    '--output-dir', '/kaggle/working/rsp_adapter',\n"
@@ -201,7 +201,7 @@ def main() -> int:
                 "assert Path('/kaggle/working/submission.zip').is_file(), 'missing train output submission.zip'\n"
                 "post = subprocess.run([\n"
                 "    sys.executable, str(RUNTIME_DIR / 'verify_rsp_train_shell.py'),\n"
-                "    '--train-script', str(RUNTIME_DIR / 'rsp_train_huikang_compatible.py'),\n"
+                "    '--train-script', str(RUNTIME_DIR / 'rsp_train_tokenmask_compatible.py'),\n"
                 "    '--dataset-verification', '/kaggle/working/rsp_dataset_verification.json',\n"
                 "    '--adapter-zip', '/kaggle/working/submission.zip',\n"
                 "    '--json-output', '/kaggle/working/rsp_post_training_adapter_gate.json',\n"

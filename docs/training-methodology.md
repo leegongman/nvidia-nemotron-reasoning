@@ -6,7 +6,7 @@
 
 목표는 `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16`에 적용 가능한 rank-32 LoRA adapter 학습 파이프라인을 구축하는 것입니다. 현재 repo는 최종 점수 달성을 주장하지 않고, 다음을 검증 가능한 산출물로 제시합니다.
 
-- Huikang-compatible token/mask SFT 이해 및 재구성
+- token/mask SFT 이해 및 재구성
 - auxiliary dataset mixing 실험 기록
 - RSP rule-selection dataset schema
 - train-only adapter builder
@@ -30,9 +30,9 @@ NVIDIA Nemotron Model Reasoning Challenge의 공식 조건은 학습 방법보�
 
 따라서 이 프로젝트의 training methodology는 단순히 loss를 낮추는 것이 아니라, rank-32 PEFT adapter로 변환 가능한 학습/검증 경로를 유지하는 데 초점을 둡니다.
 
-## Huikang-Compatible SFT Format
+## token/mask-Compatible SFT Format
 
-Huikang 방식의 핵심은 text를 바로 SFTTrainer에 넣는 것이 아니라, pre-tokenized `tokens`와 `mask`를 사용한다는 점입니다.
+token/mask SFT 방식의 핵심은 text를 바로 SFTTrainer에 넣는 것이 아니라, pre-tokenized `tokens`와 `mask`를 사용한다는 점입니다.
 
 ```text
 tokens = prompt_tokens + assistant_reasoning_tokens + final_answer_tokens
@@ -53,7 +53,7 @@ weights   = mask[1:]
 - reasoning trace와 `\boxed{answer}` token만 loss를 받습니다.
 - 모델은 문제 자체를 외우기보다, solver trace를 completion으로 재현하도록 학습됩니다.
 
-이 format은 `decode_huikang_replay_samples.ipynb`, Huikang public notebook, `sft-my-data-balace.ipynb`, `rsp_train_huikang_compatible.py`를 통해 확인한 기준입니다.
+이 format은 `token_mask_decode_samples.ipynb`, replay notebook, `sft-my-data-balace.ipynb`, `rsp_train_tokenmask_compatible.py`를 통해 확인한 기준입니다.
 
 ## Model and Adapter Configuration
 
@@ -68,9 +68,9 @@ weights   = mask[1:]
 | Main precision route | BF16 LoRA |
 | Resource probe route | 4-bit / QLoRA feasibility only |
 | Target modules | `q_proj`, `k_proj`, `v_proj`, `o_proj`, `in_proj`, `out_proj`, `up_proj`, `down_proj`, `lm_head` |
-| Primary public script | `rsp_train_huikang_compatible.py` |
+| Primary public script | `rsp_train_tokenmask_compatible.py` |
 
-초기 일부 실험에서는 `lora_dropout=0.05`, shorter max length, text-format SFT도 사용했지만, Huikang-compatible 방향에서는 8192 context, rank 32, alpha 32, dropout 0.0, completion-only loss가 더 중요한 기준으로 정리되었습니다.
+초기 일부 실험에서는 `lora_dropout=0.05`, shorter max length, text-format SFT도 사용했지만, token/mask-compatible 방향에서는 8192 context, rank 32, alpha 32, dropout 0.0, completion-only loss가 더 중요한 기준으로 정리되었습니다.
 
 ## Training Optimizations
 
@@ -84,8 +84,8 @@ weights   = mask[1:]
 | Completion-only loss | prompt memorization 방지 | core methodology |
 | Cosine LR / warmup | 안정적인 SFT schedule | used in RSP trainer |
 | 4-bit / QLoRA | T4 resource feasibility 확인 | resource-constrained probe |
-| Cut Cross Entropy style patch | logits materialization memory 절감 | used in Huikang-compatible notebook variants |
-| MoE tied-gradient convention | Tinker-style expert LoRA behavior alignment | used in Huikang-compatible notebook variants |
+| Cut Cross Entropy style patch | logits materialization memory 절감 | used in token/mask notebook variants |
+| MoE tied-gradient convention | Tinker-style expert LoRA behavior alignment | used in token/mask notebook variants |
 | Sample packing | 짧은 sequences의 padding 낭비 감소 | 검토/일부 실험 context, current public script의 핵심 claim은 아님 |
 
 Flash Attention, Liger Kernel 등은 30B-class training에서 중요한 optimization 후보로 검토했습니다. 다만 clean public repo의 현재 claim은 실제 코드 evidence가 있는 BF16/gradient checkpointing/completion-only SFT/pairwise preference learning 중심으로 제한합니다.
@@ -113,7 +113,7 @@ Flash Attention, Liger Kernel 등은 30B-class training에서 중요한 optimiza
 
 `team/minjaechoics/`의 teammate artifacts는 training methodology 측면에서 다음 insight를 제공합니다.
 
-- `equation_numeric` aggregate를 numeric/symbolic, `hk_*`/`my_*` split으로 나눠 봐야 한다.
+- `equation_numeric` aggregate를 numeric/symbolic, source replay/additional symbolic split으로 나눠 봐야 한다.
 - symbolic branch-map failure는 arithmetic ability 문제가 아니라 rule branch selection과 symbol mapping 문제에 가깝다.
 - 기존 rank-32 adapter를 직접 업데이트하면 protected domains가 흔들릴 수 있으므로 residual/patch LoRA, guarded replay, EWC, DPO, GRPO-style update가 검토되었다.
 - final submission constraint 때문에 residual/patch signal은 SVD로 다시 rank 32 adapter에 합쳐야 한다.
@@ -122,9 +122,9 @@ Flash Attention, Liger Kernel 등은 30B-class training에서 중요한 optimiza
 
 ## Dataset Families
 
-### Huikang Replay Rows
+### Token/mask Replay Rows
 
-Huikang snapshot에서 epoch-0 order를 복원하고, 각 problem id의 `synthetic.json`을 읽어 token/mask SFT row로 사용했습니다. 이 구조는 notebook에서 다음 방식으로 확인됩니다.
+token/mask replay corpus에서 epoch-0 order를 복원하고, 각 problem id의 `synthetic.json`을 읽어 token/mask SFT row로 사용했습니다. 이 단계에서 내가 한 작업은 원천 corpus 제작 주장이 아니라 schema 분석, order 복원, mask semantics 검증, train row 변환이었습니다. 이 구조는 notebook에서 다음 방식으로 확인됩니다.
 
 - `logprobs/index.jsonl`에서 `problem_id` order 읽기
 - `tokens/<problem_id>/synthetic.json` 로드
@@ -144,7 +144,7 @@ Huikang snapshot에서 epoch-0 order를 복원하고, 각 problem id의 `synthet
 
 ### Auxiliary Replay Rows
 
-Double-update notebook에서는 math replay와 E3 branch-map rows를 Huikang-style token/mask format으로 변환한 뒤 원본 stream에 interleave했습니다.
+Double-update notebook에서는 math replay와 E3 branch-map rows를 token/mask format으로 변환한 뒤 원본 stream에 interleave했습니다.
 
 이 방식의 목적:
 
@@ -196,7 +196,7 @@ Public package의 RSP dataset은 세 row family로 정리되어 있습니다.
 
 ## Adapter Conversion and SVD
 
-Huikang/Tinker 계열 adapter는 submission-compatible PEFT adapter와 key/shape가 다를 수 있습니다.
+Tinker-style 계열 adapter는 submission-compatible PEFT adapter와 key/shape가 다를 수 있습니다.
 
 주요 이슈:
 
@@ -240,7 +240,7 @@ After training, the same verifier can inspect adapter zip structure:
 
 현재 artifacts가 support하는 claim:
 
-- Huikang-style SFT format을 분석하고 public package로 재구성했다.
+- Token/mask SFT format을 분석하고 public package로 재구성했다.
 - RSP dataset schema와 verifier가 있다.
 - train-only Nemotron LoRA entrypoint가 있다.
 - adapter output은 post-training structure gate로 검증할 수 있다.

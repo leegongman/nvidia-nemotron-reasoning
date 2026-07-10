@@ -70,11 +70,11 @@ python3 -m pip install --disable-pip-version-check --no-index --find-links "$PAC
 cd "$PAYLOAD"
 python3 verify_rsp_dataset.py --dataset-dir "$DATASET" --json-output "$OUTPUT/rsp_dataset_verification.json"
 python3 verify_rsp_train_shell.py \
-  --train-script "$PAYLOAD/rsp_train_huikang_compatible.py" \
+  --train-script "$PAYLOAD/rsp_train_tokenmask_compatible.py" \
   --dataset-verification "$OUTPUT/rsp_dataset_verification.json" \
   --json-output "$OUTPUT/rsp_train_shell_verification.json"
 
-python3 rsp_train_huikang_compatible.py \
+python3 rsp_train_tokenmask_compatible.py \
   --dataset-dir "$DATASET" \
   --model "$MODEL_DIR" \
   --output-dir "$OUTPUT/rsp_adapter" \
@@ -96,7 +96,7 @@ python3 rsp_train_huikang_compatible.py \
   --enable-4bit
 
 python3 verify_rsp_train_shell.py \
-  --train-script "$PAYLOAD/rsp_train_huikang_compatible.py" \
+  --train-script "$PAYLOAD/rsp_train_tokenmask_compatible.py" \
   --dataset-verification "$OUTPUT/rsp_dataset_verification.json" \
   --adapter-zip "$OUTPUT/submission.zip" \
   --json-output "$OUTPUT/rsp_post_training_adapter_gate.json"

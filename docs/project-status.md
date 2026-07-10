@@ -6,7 +6,7 @@
 
 현재 가장 안전한 설명은 다음입니다.
 
-> NVIDIA Nemotron 기반 reasoning adapter를 학습하기 위해, Huikang 공개 데이터 구조를 분석하고 token/mask SFT, 보조 데이터 혼합, adapter 변환/SVD 분석, RSP(rule-selection prediction) 데이터 설계를 train-ready pipeline으로 정리한 프로젝트입니다.
+> NVIDIA Nemotron 기반 reasoning adapter를 학습하기 위해, token/mask SFT corpus 구조를 분석하고 token/mask SFT, 보조 데이터 혼합, adapter 변환/SVD 분석, RSP(rule-selection prediction) 데이터 설계를 train-ready pipeline으로 정리한 프로젝트입니다.
 
 이 프로젝트는 최종 점수나 최종 adapter를 공개 검증한 결과물이 아니라, reasoning failure를 데이터/학습 문제로 재정의하고 재현 가능한 학습 패키지로 정리한 engineering portfolio입니다.
 
@@ -16,10 +16,10 @@
 | --- | --- | --- |
 | Competition context | Kaggle Description/Evaluation/Data pages, `train.csv`/`test.csv` 구조 확인 | rank-32 LoRA adapter submission challenge로 설명 가능 |
 | Competition train set | `train.csv` 9,500 rows, 6개 prompt family 확인 | domain-aware data analysis의 출발점으로 설명 가능 |
-| Huikang 데이터 구조 분석 | `tokens/<problem_id>/synthetic.json`, `logprobs/index.jsonl`, token/mask format 분석 | 공개 데이터 구조를 분석하고 호환 포맷을 재구성 |
-| 기본 SFT/LoRA 학습 | Kaggle notebook 기록, `rsp_train_huikang_compatible.py` | Nemotron LoRA adapter 학습 pipeline 구성 |
+| token/mask corpus structure 분석 | `tokens/<problem_id>/synthetic.json`, `logprobs/index.jsonl`, token/mask format 분석 | 공개 데이터 구조를 분석하고 호환 포맷을 재구성 |
+| 기본 SFT/LoRA 학습 | Kaggle notebook 기록, `rsp_train_tokenmask_compatible.py` | Nemotron LoRA adapter 학습 pipeline 구성 |
 | CoT-selected SFT | rule-based correctness filtering, generated CoT 활용 기록 | 정답/추론 품질 기반 SFT data selection 실험 |
-| 보조 데이터 혼합 | math replay, equation branch-map, auxiliary rehearsal rows 기록 | 기존 Huikang-style 학습 데이터에 보조 데이터 소량 혼합 실험 |
+| 보조 데이터 혼합 | math replay, equation branch-map, auxiliary rehearsal rows 기록 | 기존 Token/mask 학습 데이터에 보조 데이터 소량 혼합 실험 |
 | Domain weighting | `equation_numeric`, `bit_manipulation` 등 domain별 loss/sample weight 기록 | domain별 중요도 조정 실험 |
 | Adapter merge/conversion | adapter 변환 notebook, SVD rank compression 코드 기록 | adapter transport, merge, SVD 압축 실험 |
 | Team weak-domain artifacts | `team/minjaechoics/` selected files | teammate equation failure analysis와 residual/patch LoRA experiments 보존 |
@@ -48,7 +48,7 @@
 - train-ready pipeline
 - reproducible training package
 - competition-compatible rank-32 LoRA adapter workflow
-- Huikang-style token/mask SFT format
+- token/mask SFT format
 - reasoning failure analysis
 - rule-selection learning formulation
 - NVIDIA Nemotron LoRA adapter workflow
@@ -64,7 +64,7 @@
 - 최고 성능 adapter처럼 보이는 표현
 - leaderboard improvement가 확정 검증되었다는 표현
 - fully validated final adapter
-- Huikang dataset을 직접 제작했다는 표현
+- 외부 원천 corpus 자체를 직접 제작했다는 표현
 - STaR full training loop를 완성했다는 표현
 
 ## 아직 부족한 정보
@@ -99,7 +99,7 @@
 ## Public Release Checklist
 
 - [x] README를 과장 없는 portfolio 설명으로 정리
-- [x] dataset design과 Huikang attribution을 문서화
+- [x] dataset design과 claim boundary를 문서화
 - [x] training methodology와 experiments를 기술 중심으로 구체화
 - [x] eval 경로를 `eval/auto_evaluator.py` 기준으로 정리
 - [x] `.gitignore`, `LICENSE`, `requirements.txt` 포함
@@ -112,7 +112,7 @@
 
 추천 GitHub description:
 
-> Train-ready NVIDIA Nemotron reasoning adapter pipeline with Huikang-style SFT data analysis, auxiliary-data mixing, adapter conversion/SVD experiments, and evaluation safety gates.
+> Train-ready NVIDIA Nemotron reasoning adapter pipeline with Token/mask SFT data analysis, auxiliary-data mixing, adapter conversion/SVD experiments, and evaluation safety gates.
 
 추천 topics:
 

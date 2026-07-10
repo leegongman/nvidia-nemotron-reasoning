@@ -19,11 +19,11 @@ Therefore the adapter must improve:
 - boxed final-answer stability;
 - protected-domain preservation.
 
-It must not broadly overwrite the base or huikang/W1 reasoning behavior.
+It must not broadly overwrite the base or token/mask adapter reasoning behavior.
 
 ## Model And Adapter Constraints
 
-RSP assumes the huikang-compatible adapter shell:
+RSP assumes the tokenmask-compatible adapter shell:
 
 - BF16 LoRA, not 4-bit training.
 - rank 32, alpha 32, dropout 0.0.
@@ -69,7 +69,7 @@ The central training signal is not generic CoT imitation. It is verified selecti
 RSP uses three row families:
 
 1. `anchor_sft`
-   - Huikang-style clean deterministic traces.
+   - Token/mask clean deterministic traces.
    - Purpose: preserve solved-domain behavior and trace style.
 
 2. `decision_sft`

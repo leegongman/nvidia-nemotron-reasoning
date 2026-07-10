@@ -20,12 +20,12 @@
 
 ```mermaid
 flowchart TD
-    A["Huikang public snapshot"] --> B["Dataset structure analysis"]
+    A["token/mask replay corpus"] --> B["Dataset structure analysis"]
     B --> C["Token/mask replay format"]
     C --> D["Auxiliary data staging"]
     D --> E["RSP dataset package"]
     E --> F["verify_rsp_dataset.py"]
-    F --> G["rsp_train_huikang_compatible.py"]
+    F --> G["rsp_train_tokenmask_compatible.py"]
     G --> H["submission.zip adapter artifact"]
     H --> I["verify_rsp_train_shell.py --adapter-zip"]
     I --> J["eval/auto_evaluator.py"]
@@ -38,10 +38,10 @@ flowchart TD
 | Component | Files | Responsibility |
 | --- | --- | --- |
 | Documentation | `README.md`, `docs/*.md` | 한국어 중심 project overview, dataset/experiment/methodology 설명 |
-| Dataset design | `docs/dataset-design.md`, `rsp_schema.json`, `rsp_design.md` | Huikang-style data 구조와 RSP row schema 설명 |
+| Dataset design | `docs/dataset-design.md`, `rsp_schema.json`, `rsp_design.md` | Token/mask data 구조와 RSP row schema 설명 |
 | Dataset builder | `build_rsp_dataset.py` | anchor/decision/preference rows를 RSP package로 생성 |
 | Dataset verifier | `verify_rsp_dataset.py` | row schema, boxed answer, count, selected domain constraints 검증 |
-| Train entrypoint | `rsp_train_huikang_compatible.py` | rank-32 Nemotron LoRA adapter train-only script |
+| Train entrypoint | `rsp_train_tokenmask_compatible.py` | rank-32 Nemotron LoRA adapter train-only script |
 | Runtime bundle | `build_rsp_runtime_bundle.py`, `build_rsp_train_kernel.py`, `build_rsp_vast_payload.py` | Kaggle/external GPU 실행 payload 구성 |
 | GPU wrapper | `rsp_run_train_pro6000.sh` | PRO 6000-class runtime에서 training 실행 |
 | Adapter gate | `verify_rsp_train_shell.py` | train script safety와 adapter zip structure 검증 |
@@ -65,7 +65,7 @@ flowchart TD
 제외하는 것:
 
 - full generated datasets
-- Huikang snapshot full copy
+- full token/mask replay corpus copy
 - checkpoints
 - `submission.zip`
 - `.safetensors`, `.bin`, `.pt`, `.pth`
@@ -92,7 +92,7 @@ RSP는 earlier experiment를 모두 대체하는 final adapter가 아닙니다. 
 
 ## Training and Submission Separation
 
-`rsp_train_huikang_compatible.py`는 다음 값을 유지합니다.
+`rsp_train_tokenmask_compatible.py`는 다음 값을 유지합니다.
 
 ```python
 SUBMISSION_ALLOWED = False
@@ -127,7 +127,7 @@ private/full source inputs
        rsp_decision_preferences.jsonl
        rsp_manifest.json
   -> verify_rsp_dataset.py
-  -> rsp_train_huikang_compatible.py
+  -> rsp_train_tokenmask_compatible.py
   -> adapter artifact
   -> verify_rsp_train_shell.py --adapter-zip
   -> local evaluation
@@ -141,4 +141,4 @@ Public repo에는 full `data/rsp_dataset`을 포함하지 않습니다. 대신 `
 - dataset format과 masking을 명시적으로 검증합니다.
 - training, evaluation, submission을 분리합니다.
 - adapter 구조가 틀리면 GPU/eval 전에 실패하도록 합니다.
-- Huikang 원천 데이터와 내 재구성 작업의 경계를 문서화합니다.
+- 외부 원천 corpus와 내 재구성/혼합/검증 작업의 경계를 문서화합니다.

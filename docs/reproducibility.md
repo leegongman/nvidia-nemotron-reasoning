@@ -17,7 +17,7 @@
 
 현재 repo만으로 재현할 수 없는 범위:
 
-- full Huikang snapshot preprocessing
+- full token/mask replay corpus preprocessing
 - full private/generated datasets
 - final selected adapter
 - full NVIDIA 30B model training
@@ -30,7 +30,7 @@
 | --- | --- | --- |
 | Nemotron base model | tokenizer/model loading | not included |
 | Full RSP dataset | actual training | not included |
-| Huikang snapshot | source analysis/replay reference | external Kaggle dataset |
+| token/mask replay corpus | source analysis/replay reference | external artifact, not included |
 | Competition `train.csv` | task/domain analysis | external Kaggle competition file |
 | Hidden test set | actual scoring | not available locally |
 | CUDA/PyTorch runtime | GPU training | environment-dependent |
@@ -89,7 +89,7 @@ Train shell verification:
 
 ```bash
 python verify_rsp_train_shell.py \
-  --train-script rsp_train_huikang_compatible.py \
+  --train-script rsp_train_tokenmask_compatible.py \
   --dataset-verification "$DATASET_DIR/rsp_verification.json" \
   --json-output "$DATASET_DIR/rsp_train_shell_verification.json"
 ```
@@ -113,7 +113,7 @@ Expected verification style:
 Model/tokenizer path가 준비되면 dry-run을 실행할 수 있습니다.
 
 ```bash
-python rsp_train_huikang_compatible.py \
+python rsp_train_tokenmask_compatible.py \
   --dataset-dir "$DATASET_DIR" \
   --model /path/to/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16 \
   --dry-run
@@ -146,7 +146,7 @@ Training 후 adapter zip이 있으면 다음을 실행합니다.
 
 ```bash
 python verify_rsp_train_shell.py \
-  --train-script rsp_train_huikang_compatible.py \
+  --train-script rsp_train_tokenmask_compatible.py \
   --dataset-verification "$DATASET_DIR/rsp_verification.json" \
   --adapter-zip /path/to/submission.zip \
   --json-output /path/to/rsp_post_training_adapter_gate.json

@@ -126,7 +126,7 @@ def adapter_zip_summary(path: Path, errors: list[str]) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train-script", type=Path, default=Path("rsp_train_huikang_compatible.py"))
+    parser.add_argument("--train-script", type=Path, default=Path("rsp_train_tokenmask_compatible.py"))
     parser.add_argument("--dataset-verification", type=Path, default=Path("data/rsp_dataset/rsp_verification.json"))
     parser.add_argument("--adapter-zip", type=Path, help="Optional produced adapter zip to validate after GPU training")
     parser.add_argument("--json-output", type=Path)
@@ -141,8 +141,8 @@ def main() -> int:
         errors.append("SUBMISSION_ALLOWED must be a literal False")
     if assignments.get("EVALUATION_ALLOWED") is not False:
         errors.append("EVALUATION_ALLOWED must be a literal False")
-    if set(assignments.get("HUIKANG_TARGET_MODULES", [])) != EXPECTED_TARGET_MODULES:
-        errors.append("HUIKANG_TARGET_MODULES must match the locked huikang-compatible module set")
+    if set(assignments.get("TOKENMASK_TARGET_MODULES", [])) != EXPECTED_TARGET_MODULES:
+        errors.append("TOKENMASK_TARGET_MODULES must match the locked token/mask-compatible module set")
     if module and not has_class(module, "WeightedSFTTrainer"):
         errors.append("missing WeightedSFTTrainer")
     if module and not has_function(module, "average_logprob"):

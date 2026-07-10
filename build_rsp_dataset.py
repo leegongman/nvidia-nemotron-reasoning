@@ -65,7 +65,7 @@ def anchor_row(row: dict[str, Any]) -> dict[str, Any]:
         "prompt": row["prompt"],
         "completion": row["completion"],
         "final_answer": str(row["final_answer"]),
-        "source": "huikang_style_v2_clean_anchor",
+        "source": "tokenmask_v2_clean_anchor",
         "source_id": str(row["id"]),
         "sample_weight": 1.0,
     }

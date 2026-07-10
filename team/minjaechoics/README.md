@@ -42,7 +42,7 @@
 
 이 팀원 artifact가 보강하는 내용은 다음입니다.
 
-- `equation_numeric`을 단일 카테고리로 보지 않고 `hk_*`, `my_*`, numeric answer, symbolic answer로 나눠 분석
+- `equation_numeric`을 단일 카테고리로 보지 않고 `source_replay_*`, `symbolic_branch_*`, numeric answer, symbolic answer로 나눠 분석
 - symbolic branch-map failure가 단순 산술 fallback, unknown operator fallback, punctuation parsing failure로 나타나는 점 확인
 - 기존 rank-32 adapter를 직접 크게 업데이트하지 않고 residual LoRA를 작게 학습한 뒤 SVD로 다시 rank 32에 맞추는 실험
 - lambda/scale sweep으로 weak-domain 보정과 protected-domain regression 사이의 trade-off 탐색

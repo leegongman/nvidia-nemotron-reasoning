@@ -6,32 +6,32 @@
 
 프로젝트는 크게 네 단계로 진행되었습니다.
 
-1. Kaggle competition dataset과 Huikang 공개 데이터 구조 분석
-2. CoT-selected SFT와 Huikang-style replay 학습 실험
+1. Kaggle competition dataset과 token/mask SFT corpus 구조 분석
+2. CoT-selected SFT와 Token/mask replay 학습 실험
 3. auxiliary data mixing, domain weighting, adapter merge/conversion/SVD 실험
 4. teammate weak-domain experiments와 residual/patch LoRA 분석
 5. STaR-inspired self-correction과 RSP rule-selection dataset 정리
 
 현재 가장 강한 public claim은 final score가 아니라 다음입니다.
 
-> NVIDIA Nemotron 기반 reasoning adapter 학습을 위해 Huikang-style SFT format을 분석하고, 보조 데이터 mixing과 rule-selection preference learning으로 확장한 train-ready pipeline을 구현했다.
+> NVIDIA Nemotron 기반 reasoning adapter 학습을 위해 Token/mask SFT format을 분석하고, 보조 데이터 mixing과 rule-selection preference learning으로 확장한 train-ready pipeline을 구현했다.
 
 ## Experiment Matrix
 
 | Experiment | Goal | Method | Evidence | Claim boundary |
 | --- | --- | --- | --- | --- |
 | Competition dataset analysis | task/domain 구조 이해 | `train.csv`, `test.csv`, official evaluation page 확인 | Kaggle competition files/pages | hidden test distribution claim 아님 |
-| Huikang dataset analysis | 원천 데이터 구조 이해 | `tokens`, `mask`, `logprobs/index.jsonl` 분석 | Huikang snapshot, decode notebook | 데이터 제작자 claim 아님 |
+| token/mask corpus analysis | 학습 데이터 구조 이해 | `tokens`, `mask`, `logprobs/index.jsonl` 분석 | token/mask replay corpus, decode notebook | 원천 corpus 제작자 claim 아님 |
 | CoT-selected SFT | noisy generated CoT 제거 | rule-based checker로 correct CoT만 SFT | `nemotron-sft-lora-with-cot-my-dataset` | final score evidence 아님 |
-| Huikang replay SFT | token/mask replay 학습 | epoch-0 order로 `synthetic.json` 로드 | Huikang notebook, local replay notebooks | 원본 recipe 완전 재현 claim 아님 |
-| Merged balanced SFT | 개인/보조 데이터를 Huikang-style corpus로 섞기 | `merged_sft_dataset/tokens` 학습 | `sft-my-data-balace` | dataset ownership claim 아님 |
+| Token/mask replay SFT | token/mask replay 학습 | epoch-0 order로 `synthetic.json` 로드 | replay notebook, local replay notebooks | 원본 recipe 완전 재현 claim 아님 |
+| Merged balanced SFT | 개인/보조 데이터를 token/mask corpus로 섞기 | `merged_sft_dataset/tokens` 학습 | `sft-my-data-balace` | dataset ownership claim 아님 |
 | Math replay mixing | broad reasoning coverage 추가 | math replay를 token/mask로 변환 후 interleave | double-update notebook | isolated improvement evidence 아님 |
 | E3 branch-map mixing | equation rule-selection 보강 | branch-map completion rows를 tokenized 후 interleave | double-update notebook | final equation gain evidence 아님 |
 | Domain weighting | weak domain 보강 | equation/bit sample/loss weight 조정 | `w1_provenance_contract.json` | LoRA alpha tuning과 구분 |
 | Adapter merge | 여러 adapter의 signal 결합 | adapter delta/key mapping, merge/transport 실험 | conversion notebooks, local artifacts | final merged adapter claim 아님 |
 | Adapter conversion | Tinker adapter를 PEFT submission 형태로 변환 | key mapping, fused projection handling | `tinker-adapter...` notebooks | conversion은 lossy 가능 |
 | SVD rank compression | rank/fused projection mismatch 해결 | LoRA delta SVD 후 rank 32 factorization | conversion notebooks, `glyphmatics` | 성능 보장 claim 아님 |
-| Teammate weak-domain analysis | equation symbolic failure 원인 파악 | `hk_*`/`my_*`, numeric/symbolic split 분석 | `team/minjaechoics/analysis/*` | team artifact로 분리 |
+| Teammate weak-domain analysis | equation symbolic failure 원인 파악 | source replay/additional symbolic, numeric/symbolic split 분석 | `team/minjaechoics/analysis/*` | team artifact로 분리 |
 | Residual/patch LoRA | 기존 adapter 보존하며 weak domain 보정 | frozen adapter + residual/patch LoRA + SVD rank-32 merge | `team/minjaechoics/additonal_tuning`, `team/minjaechoics/lambdalora` | final adapter evidence 아님 |
 | Ortho-LoRA / guard methods | protected domain regression 완화 | task-wise gradient projection, guarded replay, DPO/EWC, GRPO-style update | `team/minjaechoics/Ortho_LoRA`, `team/minjaechoics/additonal_tuning` | experimental |
 | STaR-inspired data | self-correction reasoning 검토 | answer/reasoning 개선 loop와 repair rows 설계 | STaR notes/generators | full STaR loop 완료 claim 아님 |
@@ -72,9 +72,9 @@
 
 이 조건 때문에 실험은 “답을 맞히는 notebook”보다 “제출 가능한 rank-32 adapter를 안정적으로 만드는 pipeline”에 집중했습니다.
 
-## 2. Huikang Dataset Analysis
+## 2. Token/mask Corpus Analysis
 
-Huikang 공개 자료에서 확인한 핵심은 데이터가 일반 text JSONL이 아니라 **pre-tokenized SFT corpus**라는 점입니다.
+token/mask replay corpus에서 확인한 핵심은 데이터가 일반 text JSONL이 아니라 **pre-tokenized SFT corpus**라는 점입니다.
 
 주요 구조:
 
@@ -91,7 +91,7 @@ training/sft/04-08-16-14/
 - prompt 영역은 mask 0, assistant reasoning/final answer 영역은 mask 1입니다.
 - 학습은 `tokens[:-1] -> tokens[1:]` next-token prediction 형태로 구성됩니다.
 
-이 분석은 이후 모든 Huikang-compatible training shell의 기준이 되었습니다.
+이 분석은 이후 모든 token/mask-compatible training shell의 기준이 되었습니다.
 
 ## 3. CoT-Selected SFT
 
@@ -116,11 +116,11 @@ Domain-specific prompt engineering도 적용했습니다.
 해석:
 
 - 데이터 품질과 correctness filtering이 중요하다는 방향을 확인했습니다.
-- 다만 이 notebook의 setting은 Huikang-style token/mask replay와 완전히 같지는 않습니다.
+- 다만 이 notebook의 setting은 token/mask replay와 완전히 같지는 않습니다.
 
-## 4. Huikang-Style Replay and Balanced SFT
+## 4. token/mask corpus-Style Replay and Balanced SFT
 
-`sft-my-data-balace` notebook은 Huikang 원본과 같은 구조의 `tokens` directory와 `logprobs/index.jsonl`을 읽는 학습 shell을 사용했습니다.
+`sft-my-data-balace` notebook은 token/mask corpus 원본과 같은 구조의 `tokens` directory와 `logprobs/index.jsonl`을 읽는 학습 shell을 사용했습니다.
 
 주요 설정:
 
@@ -133,7 +133,7 @@ Domain-specific prompt engineering도 적용했습니다.
 - completion mask 기반 weighted loss
 - adapter output을 `submission.zip` 형태로 package
 
-이 실험은 “text formatting SFT”보다 Huikang-compatible token/mask format이 중요하다는 판단으로 이어졌습니다.
+이 실험은 “text formatting SFT”보다 token/mask format이 중요하다는 판단으로 이어졌습니다.
 
 ## 5. Auxiliary Data Mixing
 
@@ -148,7 +148,7 @@ Double-update notebook에서는 외부 math replay JSONL을 Nemotron chat templa
 - prompt length까지 mask 0
 - assistant reasoning/final content mask 1
 - target replay answer tokens cap 적용
-- Huikang examples 사이에 replay rows 삽입
+- target examples 사이에 replay rows 삽입
 
 이 방식은 broad reasoning behavior를 보강하려는 시도였습니다.
 
@@ -194,7 +194,7 @@ Adapter merge/transport에서 다룬 문제:
 - fused projection과 per-module projection 차이
 - rank 64 이상 또는 fused delta를 rank 32 제한에 맞추는 문제
 
-Huikang/Tinker 계열 adapter를 Kaggle submission-compatible PEFT adapter로 맞추는 과정에서 SVD가 사용되었습니다.
+Tinker-style 계열 adapter를 Kaggle submission-compatible PEFT adapter로 맞추는 과정에서 SVD가 사용되었습니다.
 
 대표 문제:
 
@@ -249,8 +249,8 @@ Claim boundary:
 
 | Split | 의미 |
 | --- | --- |
-| `hk_*` | Huikang-style arithmetic/numeric examples |
-| `my_*` | 추가 구성된 symbolic branch-map examples |
+| source replay split | Token/mask arithmetic/numeric examples |
+| additional symbolic split | 추가 구성된 symbolic branch-map examples |
 | numeric answer | 숫자형 final answer |
 | symbolic answer | punctuation/symbol 기반 final answer |
 
@@ -402,12 +402,12 @@ README에서는 이 숫자를 제거했고, 현재 public claim은 train-ready p
 - 최종 순위/수상 성과처럼 보이는 표현
 - 개선을 보장하는 표현
 - 0.86+ adapter가 현재 repo에서 확정 재현된다는 표현
-- Huikang 원천 데이터 제작자처럼 보이는 표현
+- 외부 원천 corpus 제작자처럼 보이는 표현
 - STaR full loop 완료 구현 표현
 
 사용할 표현:
 
-- Huikang-style dataset analysis
+- Token/mask dataset analysis
 - curated/restructured/augmented training package
 - train-ready Nemotron adapter pipeline
 - adapter conversion and SVD analysis

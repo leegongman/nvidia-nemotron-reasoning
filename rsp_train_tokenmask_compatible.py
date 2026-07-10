@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """RSP train-only Nemotron LoRA entrypoint.
 
-This script is deliberately train-only.  It builds a rank-32 Huikang-compatible
+This script is deliberately train-only.  It builds a rank-32 token/mask-compatible
 adapter from the RSP data package with two objectives:
 
 1. weighted completion-only SFT over anchor_sft + decision_sft rows
@@ -27,7 +27,7 @@ from typing import Any
 
 
 DEFAULT_MODEL_ID = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16"
-HUIKANG_TARGET_MODULES = [
+TOKENMASK_TARGET_MODULES = [
     "q_proj",
     "k_proj",
     "v_proj",
@@ -232,7 +232,7 @@ def summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="RSP Huikang-compatible rank-32 LoRA trainer")
+    parser = argparse.ArgumentParser(description="RSP token/mask-compatible rank-32 LoRA trainer")
     parser.add_argument("--dataset-dir", type=Path, default=Path("data/rsp_dataset"))
     parser.add_argument("--model", default=DEFAULT_MODEL_ID)
     parser.add_argument("--output-dir", type=Path, default=Path("/kaggle/working/rsp_adapter"))
@@ -315,7 +315,7 @@ def main() -> int:
             "rank": args.lora_rank,
             "alpha": args.lora_alpha,
             "dropout": args.lora_dropout,
-            "target_modules": HUIKANG_TARGET_MODULES,
+            "target_modules": TOKENMASK_TARGET_MODULES,
             "max_seq_length": args.max_seq_length,
             "precision": "bf16",
         },
@@ -390,7 +390,7 @@ def main() -> int:
             lora_dropout=args.lora_dropout,
             bias="none",
             task_type="CAUSAL_LM",
-            target_modules=HUIKANG_TARGET_MODULES,
+            target_modules=TOKENMASK_TARGET_MODULES,
         ),
     )
     model.print_trainable_parameters()
