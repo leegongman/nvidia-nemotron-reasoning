@@ -21,17 +21,17 @@ NVIDIA Nemotron Reasoning Challenge를 계기로 시작한 reasoning adapter 연
 | 공개 범위 | 핵심 코드, 작은 example dataset, 검증기, 학습 스크립트, 실험 기록 |
 | 미포함 | 전체 원본 데이터, 최종 checkpoint, 검증되지 않은 최종 점수 주장 |
 
-## 내가 한 작업
+## 주요 구현
 
-- reasoning failure 유형과 domain별 오답 패턴 분석
-- prompt token과 assistant completion token을 분리한 token/mask SFT corpus 설계
-- CoT-selected SFT, replay corpus, balanced mixing, auxiliary data interleaving 실험
-- bit·equation 실패를 decision point와 branch trace로 분해
-- `anchor_sft`, `decision_sft`, `decision_preferences`로 구성된 RSP schema 설계
-- rank-32 LoRA adapter 변환과 SVD compression 경로 분석
-- 동일 evaluation sample에서 여러 adapter를 비교하는 평가 workflow 구성
-- training·evaluation·submission을 분리하는 safety gate와 static verifier 구현
-- 팀 실험과 개인 구현의 경계를 구분한 공개용 패키지 정리
+- Reasoning failure 유형화와 domain별 오답 패턴 분석
+- Prompt·completion 분리 기반 token/mask SFT corpus 설계
+- CoT-selected SFT·replay corpus·balanced mixing·auxiliary interleaving 실험
+- Bit·equation failure의 decision point·branch trace 분해
+- `anchor_sft`·`decision_sft`·`decision_preferences` 기반 RSP schema 설계
+- Rank-32 LoRA adapter 변환과 SVD compression 경로 분석
+- 동일 evaluation sample 기반 multi-adapter 비교 workflow 구성
+- Training·evaluation·submission 분리형 safety gate와 static verifier 구현
+- 팀 실험과 개인 구현을 분리한 공개용 패키지 구성
 
 ## 핵심 전환
 
@@ -97,7 +97,7 @@ weights   = mask[1:]
 
 prompt memorization을 줄이고 solver trace와 최종 `\boxed{answer}` 생성에 집중하는 completion-only loss 구조
 
-### 내가 구성한 데이터 흐름
+### 데이터 구성과 실험
 
 | 데이터·실험 | 구성 | 목적 |
 |---|---|---|
