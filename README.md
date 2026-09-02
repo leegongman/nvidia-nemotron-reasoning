@@ -2,7 +2,7 @@
   <img src="assets/nemotron-reasoning-banner.jpeg" alt="Nemotron reasoning project visual" width="760">
 </p>
 
-# NVIDIA Nemotron Reasoning Adapter
+# NVIDIA Nemotron Reasoning
 
 ### From reasoning failures to rule-selection training
 
