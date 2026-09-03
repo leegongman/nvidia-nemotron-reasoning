@@ -14,11 +14,14 @@ NVIDIA Nemotron Model Reasoning Challenge를 계기로 진행한 reasoning adapt
 | --- | --- |
 | What I built | Nemotron LoRA adapter training pipeline과 데이터·평가·제출 검증 흐름 |
 | Current evidence | Kaggle full recipe, token/mask staging, replay mixing, domain-weighted loss, adapter 구조 분석 |
-| Not claimed | 최종 leaderboard 점수 재현, 최종 adapter 공개, 모든 실험의 독립적인 성능 검증 |
+| Historical placement | 275 / 4,183 (상위 약 6.6%), 기록된 competition placement |
+| Not claimed | 최종 adapter 성능 재현, 최종 adapter 공개, 모든 실험의 독립적인 성능 검증 |
 
 ## Project Summary
 
 대회는 NVIDIA-Nemotron-3-Nano-30B-A3B-BF16 base model에 적용할 rank-32 이하 LoRA adapter를 제출하고, hidden reasoning puzzle의 최종 답을 평가하는 방식입니다.
+
+기록된 competition placement는 **275 / 4,183 (상위 약 6.6%)**입니다. 이 수치는 당시 제출 기록을 설명하기 위한 historical placement이며, 현재 공개 저장소에서 최종 adapter나 leaderboard 결과를 재현했다는 주장은 아닙니다.
 
 | Domain | Task |
 | --- | --- |
@@ -77,7 +80,7 @@ flowchart TD
     J --> K[Submission readiness decision]
 ```
 
-Nemotron backbone과 adapter target 구조는 [Architecture](docs/architecture.md)에서 별도 도식으로 설명합니다.
+Nemotron 모델 구조 시각화 자료와 adapter target 설명은 [Nemotron Model Structure Visualization](docs/architecture.md#nemotron-model-structure-visualization)에서 확인할 수 있습니다.
 
 ## Data Design
 

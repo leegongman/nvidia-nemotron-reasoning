@@ -16,11 +16,13 @@ flowchart TD
     G --> I[Kaggle or Vast runtime payload]
 ```
 
-## Nemotron Structure
+## Nemotron Model Structure Visualization
 
-아래 그림은 이 프로젝트에서 학습·분석한 target surface를 중심으로 단순화한 개념도입니다. Nemotron의 실제 layer-by-layer 구현 전체를 대체하는 공식 model graph가 아니며, 공개 notebook과 학습 코드에서 확인된 Mamba/MoE backbone 및 adapter injection 지점을 표현합니다.
+아래 그림은 이 프로젝트의 Nemotron 모델 구조를 설명하기 위한 시각화 자료입니다. 학습·분석한 adapter target surface를 중심으로 단순화한 개념도이며, Nemotron의 실제 layer-by-layer 구현 전체를 대체하는 공식 model graph는 아닙니다. 공개 notebook과 학습 코드에서 확인된 Mamba/MoE backbone 및 adapter injection 지점을 표현합니다.
 
 Base model: [NVIDIA Nemotron 3 Nano 30B A3B BF16 on Hugging Face](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16)
+
+구조적으로는 sequence mixing을 담당하는 Mamba 계열 block과 sparse expert routing을 사용하는 MoE block이 hybrid backbone을 구성하고, 이 프로젝트에서는 attention/projection/MLP 계열 module과 `lm_head`를 LoRA injection 및 namespace 검증 대상으로 다뤘습니다. 아래 도식은 이 학습 경로와 adapter 적용 지점을 한눈에 보기 위한 것입니다.
 
 ```mermaid
 flowchart LR

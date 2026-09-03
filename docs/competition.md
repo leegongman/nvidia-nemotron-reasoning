@@ -26,3 +26,7 @@
 - answer extraction: final `\boxed{}` 중심
 
 따라서 단순 prompt engineering보다 중요한 것은 **제출 가능한 adapter 구조**와 **hidden puzzle generalization**입니다.
+
+## Historical Placement
+
+기록된 competition placement는 **275 / 4,183 (상위 약 6.6%)**입니다. 이는 당시 제출 기록을 나타내는 historical placement이며, 현재 공개 저장소에서 최종 adapter와 leaderboard 결과를 재현했다는 의미는 아닙니다.
