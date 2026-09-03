@@ -1,4 +1,4 @@
-# equation_numeric 오답 분석 보고서
+# Equation Numeric Error Analysis
 
 평가 결과 디렉토리: `/home/ubuntu/evaluator/results/authorized_submission_1_vllm_60pc_20260517_170748`
 
@@ -8,7 +8,7 @@ Backend: `vllm`
 
 평가 샘플: `/home/ubuntu/evaluator/eval_60_per_category.jsonl`에서 뽑은 `equation_numeric` 60문항
 
-## 요약
+## Summary
 
 `equation_numeric`의 점수는 `43/60 = 0.7167`로, 이번 60개/category 평가에서 가장 낮았습니다.
 
@@ -25,9 +25,9 @@ Backend: `vllm`
 
 핵심 결론은 이렇습니다. 모델은 일반적인 숫자 연산처럼 보이는 `source_replay_*` 문제는 거의 완벽하게 풀었지만, `symbolic_branch_*`의 기호 기반 branch-map 문제에서 크게 약했습니다. 이 문제들은 단순 사칙연산이나 두 피연산자 연산이 아니라, `input[2]`를 기준으로 분기한 뒤 특정 위치의 문자를 골라 위치별 mapping을 적용하는 구조인 경우가 많습니다. 반면 모델은 이를 숫자 연산, 문자열 이어붙이기, 역순 이어붙이기, 절댓값 차이 같은 작은 operator family로 해석하는 경향을 보였습니다.
 
-## 주요 실패 유형
+## Main Failure Types
 
-### 1. 기호형 branch-map 문제를 산술/operator 문제로 오해함
+### 1. Misreading symbolic branch-map problems as arithmetic/operator problems
 
 오답 중 상당수는 구두점 기호가 데이터 토큰, operator, 정답 문자로 동시에 등장합니다. 생성 답변을 보면 모델은 이런 기호들을 `A`, `B`, `C` 같은 내부 문자로 치환한 뒤, 가운데 문자를 `x`, `y`, `z` 같은 operator로 라벨링하려고 합니다.
 
@@ -47,7 +47,7 @@ Backend: `vllm`
 
 즉 이 케이스는 단순 추출 문제가 아니라, 생성된 풀이 자체가 잘못된 문제 모델을 사용한 것입니다.
 
-### 2. 질문 operator가 예시에 없으면 임의 fallback을 만듦
+### 2. Inventing a fallback when the queried operator is absent from the examples
 
 몇몇 숫자형 오답은 생성 답변 안에서 명시적으로 "question operator is not found in the examples"라고 말한 뒤, 임의 기본 연산을 적용했습니다.
 
@@ -67,7 +67,7 @@ Backend: `vllm`
 
 하지만 reference response는 `input[2]=!`에 대한 hidden branch-map 규칙을 사용합니다. 따라서 이 문제도 산술적 절댓값 차이 문제가 아니었습니다.
 
-### 3. 알 수 없는 기호 operator를 concatenation으로 처리함
+### 3. Treating an unknown symbol operator as concatenation
 
 기호형 문제에서는 모델이 "question operator is unknown"이라고 판단한 뒤 concatenation을 기본값으로 사용하는 경우가 많았습니다. 이것이 기호형 오답의 큰 비중을 차지합니다.
 
@@ -82,7 +82,7 @@ Backend: `vllm`
 
 특히 `CzxAE`, `EB?H` 같은 출력은 매우 진단적입니다. 모델이 기호를 내부 변수로 바꾼 뒤, 최종 답을 다시 원래 symbol alphabet으로 복원하지 못하고 내부 표현을 그대로 내보냈습니다.
 
-### 4. 기호와 operator의 경계가 모호한 문제에서 parsing이 흔들림
+### 4. Parsing instability when the symbol/operator boundary is ambiguous
 
 prompt는 구두점이 매우 많은 문자열을 사용합니다. 모델은 반복적으로 "two symbol-digits, one operator, two symbol-digits" 구조를 가정했지만, 실제 문제에서는 어떤 문자가 데이터 기호이면서 동시에 operator처럼 보이기도 하고, 모델의 내부 매핑에 없는 문자도 등장합니다.
 
@@ -92,7 +92,7 @@ prompt는 구두점이 매우 많은 문자열을 사용합니다. 모델은 반
 - `symbolic_branch_00689`: 정답 <code>&#96;{</code>, 예측 <code>&#124;}</code>. 모델은 reverse concatenation류 규칙을 선택했지만 잘못 파싱한 조각에 적용했습니다.
 - `symbolic_branch_00408`: 정답 `]#`, 예측 `\[%']`. 모델은 일부 예시에서 reverse concatenation을 과잉 일반화했지만, reference는 branch-map 변환이었습니다.
 
-### 5. 답안 추출기는 부차적 위험 요소지만 주원인은 아님
+### 5. The answer extractor is a secondary risk, not the primary cause
 
 evaluator의 `\boxed{...}` 추출 로직은 마지막 중괄호를 찾는 단순 휴리스틱입니다.
 
@@ -112,7 +112,7 @@ matches.append(segment[:last_brace] if last_brace != -1 else segment)
 
 하지만 이 경우에도 raw output 자체가 정답 <code>:[&#96;&#96;</code>를 제대로 생성한 것은 아니었습니다. 따라서 추출기 취약성은 보조적인 문제이고, 낮은 점수의 주된 원인은 모델의 풀이 전략 실패입니다.
 
-## 전체 오답 목록
+## Full Error List
 
 | # | 문제 | 정답 | 예측 | 생성 답변 기반 진단 |
 |---:|---|---|---|---|
@@ -134,7 +134,7 @@ matches.append(segment[:last_brace] if last_brace != -1 else segment)
 | 16 | `symbolic_branch_00187` | `7541` | `34` | 예시에 없는 operator에 대해 absolute difference를 기본값으로 사용 |
 | 17 | `symbolic_branch_00554` | `?'@!` | `CzxAE` | 내부 표현을 symbol로 복원하지 못하고 code letter를 그대로 출력 |
 
-## 해석
+## Interpretation
 
 이번 샘플에서는 `equation_numeric`이라는 카테고리명이 다소 오해를 부릅니다. 60문항 중 19문항은 숫자 정답이 아니라 기호형 정답입니다. 모델은 이 기호형 케이스에서 크게 약했습니다.
 
@@ -155,7 +155,7 @@ matches.append(segment[:last_brace] if last_brace != -1 else segment)
 3. position-specific symbol map을 적용한다.
 4. 길이가 달라질 수 있는 output을 만든다.
 
-## 개선 제안
+## Improvement Suggestions
 
 1. `equation_numeric` 점수를 최소한 `source replay` vs `symbolic branch`, numeric-answer vs symbolic-answer로 나눠서 리포팅하는 것이 좋습니다. 단일 aggregate 점수 `0.7167`은 서로 다른 두 문제군을 섞어서 보여줍니다.
 
@@ -170,4 +170,3 @@ matches.append(segment[:last_brace] if last_brace != -1 else segment)
    - symbolic example에서 산술 fallback을 사용하지 않는 패턴
 
 5. symbolic-answer 평가를 더 신뢰하려면 answer extraction도 개선하는 것이 좋습니다. `segment.rfind("}")` 방식보다 brace-balanced extraction 또는 sentinel 기반 extraction이 안전합니다.
-

@@ -1,6 +1,6 @@
-# Residual LoRA + SVD Rank-32 병합 원리
+# Residual LoRA + SVD Rank-32 Merge Principle
 
-## 1. 목적
+## 1. Objective
 
 현재 가장 안정적으로 동작한 LoRA는 기존 `submission_1` adapter를 직접 수정하지 않고, 그 위에 아주 작은 보정용 LoRA를 추가로 학습한 뒤 다시 단일 rank-32 adapter로 압축한 방식이다.
 
@@ -10,7 +10,7 @@
 - 약한 카테고리인 `equation_numeric`에만 작은 보정 신호를 더한다.
 - 대회 평가 환경의 `max_lora_rank=32` 제한을 만족하는 단일 adapter로 제출한다.
 
-## 2. 기본 구조
+## 2. Base Structure
 
 기존 LoRA의 추론 식은 다음과 같다.
 
@@ -34,7 +34,7 @@ DeltaW_residual     : 새로 얹은 작은 residual LoRA, trainable
 
 즉 학습 중 gradient는 `DeltaW_residual`에만 흐른다. 기존 adapter 자체는 직접 업데이트하지 않는다.
 
-## 3. Residual Adapter 학습 설정
+## 3. Residual Adapter Training Setup
 
 실제 residual adapter는 다음 설정으로 만들어졌다.
 
@@ -65,7 +65,7 @@ excluded:
 
 `up_proj/down_proj`는 MoE expert 전체에 걸려 있어 파라미터 수와 영향 범위가 매우 크다. `lm_head`도 출력 분포 전체를 흔들 수 있다. 그래서 이번 residual LoRA는 작은 projection 계열에만 얹어 catastrophic drift를 줄였다.
 
-## 4. 사용한 데이터
+## 4. Data Used
 
 학습 데이터는 evaluator의 `debug_predictions`에서 만든 teacher-trace 데이터다.
 
@@ -85,7 +85,7 @@ drift_anchor_teacher_trace
 
 핵심은 단순히 정답만 주입하는 것이 아니라, `reference_response`에 들어 있는 정답 풀이 흐름을 target으로 사용했다는 점이다.
 
-## 5. 왜 병합이 필요한가
+## 5. Why Merge
 
 학습 중 구조는 다음과 같다.
 
@@ -119,7 +119,7 @@ rank(DeltaW_final) <= 32
 scale = 0.03
 ```
 
-## 6. SVD Rank-32 재압축 원리
+## 6. SVD Rank-32 Recompression Principle
 
 LoRA update는 보통 다음 형태다.
 
@@ -173,7 +173,7 @@ rank <= 32
 
 이 adapter는 대회 vLLM이 하나의 일반 LoRA adapter로 로드할 수 있다.
 
-## 7. 왜 이 방식이 안전한가
+## 7. Why This Approach Is Safe
 
 직접 SFT 방식은 기존 rank-32 adapter 자체를 업데이트한다.
 
@@ -192,7 +192,7 @@ DeltaW_submission_1 -> DeltaW_submission_1'
 
 다만 완전히 무해한 것은 아니다. 최종적으로는 `DeltaW_final`이 logits를 바꾸기 때문에 scale이 너무 크면 다른 카테고리도 흔들릴 수 있다.
 
-## 8. 현재 제출한 산출물
+## 8. Currently Submitted Artifact
 
 학습된 residual adapter:
 
@@ -237,7 +237,7 @@ changed predictions: 6, all inside equation_numeric wrong cases
 
 즉 `scale=0.03`은 성능을 개선하지는 않았지만, 기존 정답을 깨지 않는 안전한 병합 지점으로 확인되었다.
 
-## 9. 앞으로의 개선 방향
+## 9. Future Improvements
 
 현재 residual adapter는 안전하게 작동했지만 오답을 정답으로 바꾸지는 못했다. 다음 개선은 재학습보다 scale sweep이 먼저다.
 
@@ -263,4 +263,3 @@ equation_numeric 43/60 이상으로 상승
 - equation_numeric 오답 중 branch-position 오류만 따로 분리
 - punctuation/backtick 보존 케이스만 별도 residual adapter로 학습
 - residual target module을 더 좁혀 `in_proj/out_proj`만 실험
-

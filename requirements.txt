@@ -4,6 +4,7 @@ accelerate>=1.0.0
 bitsandbytes>=0.43.0
 datasets>=2.20.0
 kagglehub>=0.3.0
+pandas>=2.0.0
 peft>=0.13.0
 safetensors>=0.4.5
 sentencepiece>=0.2.0

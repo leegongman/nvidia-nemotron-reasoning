@@ -166,9 +166,12 @@ def preference_record(
 
 def verify_dataset(dataset_dir: Path) -> dict[str, Any]:
     output = Path.cwd() / "rsp_verification_for_training.json"
+    local_verifier = Path(__file__).with_name("verify_rsp_dataset.py")
+    repo_verifier = Path(__file__).resolve().parents[1] / "data" / "verify_rsp_dataset.py"
+    verifier = local_verifier if local_verifier.is_file() else repo_verifier
     cmd = [
         sys.executable,
-        "verify_rsp_dataset.py",
+        str(verifier),
         "--dataset-dir",
         str(dataset_dir),
         "--json-output",

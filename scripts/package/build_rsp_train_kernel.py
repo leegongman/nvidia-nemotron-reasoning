@@ -14,12 +14,13 @@ from pathlib import Path
 
 
 CANDIDATE = "rsp-rule-selection-post-training"
-RUNTIME_FILES = [
-    "rsp_train_tokenmask_compatible.py",
-    "verify_rsp_train_shell.py",
-    "verify_rsp_dataset.py",
-    "rsp_schema.json",
-]
+REPO_ROOT = Path(__file__).resolve().parents[2]
+RUNTIME_FILES = {
+    "rsp_train_tokenmask_compatible.py": "scripts/train/rsp_train_tokenmask_compatible.py",
+    "verify_rsp_train_shell.py": "scripts/package/verify_rsp_train_shell.py",
+    "verify_rsp_dataset.py": "scripts/data/verify_rsp_dataset.py",
+    "rsp_schema.json": "schemas/rsp_schema.json",
+}
 
 
 def code(source: str) -> dict:
@@ -31,7 +32,7 @@ def markdown(source: str) -> dict:
 
 
 def embedded_files_cell() -> str:
-    files = {name: Path(name).read_text(encoding="utf-8") for name in RUNTIME_FILES}
+    files = {name: (REPO_ROOT / source).read_text(encoding="utf-8") for name, source in RUNTIME_FILES.items()}
     return (
         "from pathlib import Path\nimport json\n"
         "RUNTIME_DIR = Path('/kaggle/working/rsp_runtime')\n"

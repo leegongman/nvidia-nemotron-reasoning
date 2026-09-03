@@ -12,15 +12,16 @@ from typing import Any
 
 
 CANDIDATE = "rsp-rule-selection-post-training"
-ROOT_FILES = [
-    "rsp_design.md",
-    "rsp_schema.json",
-    "build_rsp_dataset.py",
-    "verify_rsp_dataset.py",
-    "rsp_train_tokenmask_compatible.py",
-    "verify_rsp_train_shell.py",
-    "build_rsp_train_kernel.py",
-]
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ROOT_FILES = {
+    "rsp_design.md": "schemas/rsp_design.md",
+    "rsp_schema.json": "schemas/rsp_schema.json",
+    "build_rsp_dataset.py": "scripts/data/build_rsp_dataset.py",
+    "verify_rsp_dataset.py": "scripts/data/verify_rsp_dataset.py",
+    "rsp_train_tokenmask_compatible.py": "scripts/train/rsp_train_tokenmask_compatible.py",
+    "verify_rsp_train_shell.py": "scripts/package/verify_rsp_train_shell.py",
+    "build_rsp_train_kernel.py": "scripts/package/build_rsp_train_kernel.py",
+}
 DATASET_FILES = [
     "rsp_anchor_sft.jsonl",
     "rsp_decision_sft.jsonl",
@@ -54,8 +55,8 @@ def main() -> int:
         shutil.rmtree(output)
     output.mkdir(parents=True, exist_ok=True)
     files: dict[str, Any] = {}
-    for name in ROOT_FILES:
-        files[name] = copy_file(Path(name), output / name)
+    for bundle_name, source_name in ROOT_FILES.items():
+        files[bundle_name] = copy_file(REPO_ROOT / source_name, output / bundle_name)
     for name in DATASET_FILES:
         files[f"rsp_dataset/{name}"] = copy_file(args.dataset_dir / name, output / "rsp_dataset" / name)
 

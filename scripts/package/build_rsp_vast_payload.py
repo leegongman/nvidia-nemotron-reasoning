@@ -12,14 +12,14 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT_FILES = [
-    "rsp_train_tokenmask_compatible.py",
-    "verify_rsp_train_shell.py",
-    "verify_rsp_dataset.py",
-    "rsp_schema.json",
-    "rsp_design.md",
-    "rsp_run_train_pro6000.sh",
-]
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ROOT_FILES = {
+    "rsp_train_tokenmask_compatible.py": "scripts/train/rsp_train_tokenmask_compatible.py",
+    "verify_rsp_dataset.py": "scripts/data/verify_rsp_dataset.py",
+    "rsp_schema.json": "schemas/rsp_schema.json",
+    "rsp_design.md": "schemas/rsp_design.md",
+    "rsp_run_train_pro6000.sh": "scripts/train/rsp_run_train_pro6000.sh",
+}
 DATASET_FILES = [
     "rsp_anchor_sft.jsonl",
     "rsp_decision_sft.jsonl",
@@ -59,8 +59,8 @@ def main() -> int:
     output.mkdir(parents=True, exist_ok=True)
 
     files: dict[str, Any] = {}
-    for name in ROOT_FILES:
-        files[name] = copy_file(Path(name), output / name)
+    for bundle_name, source_name in ROOT_FILES.items():
+        files[bundle_name] = copy_file(REPO_ROOT / source_name, output / bundle_name)
     for name in DATASET_FILES:
         files[f"rsp_dataset/{name}"] = copy_file(args.dataset_dir / name, output / "rsp_dataset" / name)
 
