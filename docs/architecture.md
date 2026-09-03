@@ -24,26 +24,24 @@ Base model: [NVIDIA Nemotron 3 Nano 30B A3B BF16 on Hugging Face](https://huggin
 
 구조적으로는 sequence mixing을 담당하는 Mamba 계열 block과 sparse expert routing을 사용하는 MoE block이 hybrid backbone을 구성하고, 이 프로젝트에서는 attention/projection/MLP 계열 module과 `lm_head`를 LoRA injection 및 namespace 검증 대상으로 다뤘습니다. 아래 도식은 이 학습 경로와 adapter 적용 지점을 한눈에 보기 위한 것입니다.
 
-![Nemotron model structure visualization](../assets/nemotron-model-structure.svg)
-
-이 시각화는 모델 card에서 확인되는 52-layer 구성(23 Mamba-2 layers, 6 GQA/attention layers, 23 MoE layers)과 MoE의 expert routing(128 routed experts + 1 shared expert, token당 6개 활성)을 요약합니다. 분홍색 경로는 이 프로젝트의 rank-32 LoRA 및 `lm_head` 보완 경로를 나타냅니다. 상세 수치와 사용 조건은 [Hugging Face model card](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16)에서 확인할 수 있습니다.
+이 시각화는 모델 card에서 확인되는 52-layer 구성(23 Mamba-2 layers, 6 GQA/attention layers, 23 MoE layers)과 MoE의 expert routing(128 routed experts + 1 shared expert, token당 6개 활성)을 요약합니다. LoRA 경로는 이 프로젝트의 rank-32 adapter 및 `lm_head` 보완 경로를 나타냅니다. 상세 수치와 사용 조건은 [Hugging Face model card](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16)에서 확인할 수 있습니다.
 
 ```mermaid
-flowchart LR
-    A[NVIDIA Nemotron 3 Nano 30B A3B BF16] --> B[Nemotron-H hybrid backbone]
-    B --> C[Mamba sequence-mixing blocks]
-    B --> D[MoE expert blocks]
-    D --> E[Expert routing]
-    C --> F[Projection and output modules]
-    E --> F
-    F --> G[lm_head]
-    H[Rank-32 LoRA adapter] -. injected into .-> I[Observed target modules]
-    I --> J[q_proj, k_proj, v_proj, o_proj]
-    I --> K[up_proj, down_proj, in_proj, out_proj]
-    I --> L[lm_head]
-    J --> F
-    K --> F
-    L --> G
+flowchart TD
+    A["Input tokens<br/>prompt + chat template"] --> B["NVIDIA Nemotron 3 Nano<br/>30B total / 3B active / BF16"]
+    B --> C["Nemotron-H hybrid backbone<br/>52 layers"]
+    C --> D["Layer schedule"]
+    D --> E["Mamba-2 blocks<br/>23 layers"]
+    D --> F["GQA / attention blocks<br/>6 layers / 2 groups"]
+    D --> G["MoE blocks<br/>23 layers"]
+    G --> H["Expert routing<br/>128 routed + 1 shared<br/>6 active experts per token"]
+    E --> I["Hidden states"]
+    F --> I
+    H --> I
+    I --> J["lm_head<br/>reasoning + boxed answer"]
+    K["Rank-32 LoRA adapter<br/>q/k/v/o, up/down, in/out, lm_head"] -.-> F
+    K -.-> G
+    K -.-> J
 ```
 
 ### Adapter Injection Surface

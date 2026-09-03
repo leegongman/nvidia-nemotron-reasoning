@@ -66,9 +66,27 @@ NVIDIA Nemotron Model Reasoning Challenge를 계기로 진행한 reasoning adapt
 
 ## System Architecture
 
-![Nemotron model structure visualization](assets/nemotron-model-structure.svg)
+### Nemotron Model Structure
 
-이 그림은 NVIDIA Nemotron 3 Nano의 hybrid Mamba/MoE backbone과 이 프로젝트에서 확인한 rank-32 LoRA target surface를 함께 보여주는 모델 구조 시각화 자료입니다. 전체 layer 구현을 그대로 재현한 graph가 아니라, 모델 카드의 구조 정보와 실제 학습 코드의 adapter 적용 지점을 연결한 프로젝트 수준의 설명도입니다.
+아래는 NVIDIA Nemotron 3 Nano의 hybrid Mamba/MoE backbone과 이 프로젝트에서 확인한 rank-32 LoRA target surface를 함께 보여주는 모델 구조 시각화 자료입니다. 전체 layer 구현을 그대로 재현한 공식 graph가 아니라, 모델 카드의 구조 정보와 실제 학습 코드의 adapter 적용 지점을 연결한 프로젝트 수준의 설명도입니다.
+
+```mermaid
+flowchart TD
+    A["Input tokens<br/>prompt + chat template"] --> B["NVIDIA Nemotron 3 Nano<br/>30B total / 3B active / BF16"]
+    B --> C["Nemotron-H hybrid backbone<br/>52 layers"]
+    C --> D["Layer schedule"]
+    D --> E["Mamba-2 blocks<br/>23 layers"]
+    D --> F["GQA / attention blocks<br/>6 layers / 2 groups"]
+    D --> G["MoE blocks<br/>23 layers"]
+    G --> H["Expert routing<br/>128 routed + 1 shared<br/>6 active experts per token"]
+    E --> I["Hidden states"]
+    F --> I
+    H --> I
+    I --> J["lm_head<br/>reasoning + boxed answer"]
+    K["Rank-32 LoRA adapter<br/>q/k/v/o, up/down, in/out, lm_head"] -.-> F
+    K -.-> G
+    K -.-> J
+```
 
 ```mermaid
 flowchart TD
@@ -84,7 +102,7 @@ flowchart TD
     J --> K[Submission readiness decision]
 ```
 
-Nemotron 모델 구조 시각화 자료와 adapter target 설명은 [Nemotron Model Structure Visualization](docs/architecture.md#nemotron-model-structure-visualization)에서 확인할 수 있습니다.
+구조의 설명과 target module 표는 [Nemotron Model Structure Visualization](docs/architecture.md#nemotron-model-structure-visualization)에서 확인할 수 있습니다.
 
 ## Data Design
 
