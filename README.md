@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/nemotron-reasoning-banner.jpeg" alt="Nemotron reasoning project visual" width="760">
+</p>
+
 # NVIDIA Nemotron Reasoning
 
 ### From reasoning failures to rule-selection training
@@ -160,7 +164,6 @@ NVIDIA Nemotron Model Reasoning Challenge를 계기로 진행한 reasoning adapt
     ├── docs/          # architecture, dataset, training, experiments
     ├── experiments/   # experiment records and recipe evidence
     ├── techniques/    # PEFT, masking, optimization, merge/SVD
-    ├── configs/       # small recipe example; not auto-loaded
     ├── data/          # dataset documentation
     ├── schemas/       # RSP schema and design contracts
     ├── scripts/
