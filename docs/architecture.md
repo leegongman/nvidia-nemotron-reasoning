@@ -24,6 +24,10 @@ Base model: [NVIDIA Nemotron 3 Nano 30B A3B BF16 on Hugging Face](https://huggin
 
 구조적으로는 sequence mixing을 담당하는 Mamba 계열 block과 sparse expert routing을 사용하는 MoE block이 hybrid backbone을 구성하고, 이 프로젝트에서는 attention/projection/MLP 계열 module과 `lm_head`를 LoRA injection 및 namespace 검증 대상으로 다뤘습니다. 아래 도식은 이 학습 경로와 adapter 적용 지점을 한눈에 보기 위한 것입니다.
 
+![Nemotron model structure visualization](../assets/nemotron-model-structure.svg)
+
+이 시각화는 모델 card에서 확인되는 52-layer 구성(23 Mamba-2 layers, 6 GQA/attention layers, 23 MoE layers)과 MoE의 expert routing(128 routed experts + 1 shared expert, token당 6개 활성)을 요약합니다. 분홍색 경로는 이 프로젝트의 rank-32 LoRA 및 `lm_head` 보완 경로를 나타냅니다. 상세 수치와 사용 조건은 [Hugging Face model card](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16)에서 확인할 수 있습니다.
+
 ```mermaid
 flowchart LR
     A[NVIDIA Nemotron 3 Nano 30B A3B BF16] --> B[Nemotron-H hybrid backbone]

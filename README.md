@@ -66,6 +66,10 @@ NVIDIA Nemotron Model Reasoning Challenge를 계기로 진행한 reasoning adapt
 
 ## System Architecture
 
+![Nemotron model structure visualization](assets/nemotron-model-structure.svg)
+
+이 그림은 NVIDIA Nemotron 3 Nano의 hybrid Mamba/MoE backbone과 이 프로젝트에서 확인한 rank-32 LoRA target surface를 함께 보여주는 모델 구조 시각화 자료입니다. 전체 layer 구현을 그대로 재현한 graph가 아니라, 모델 카드의 구조 정보와 실제 학습 코드의 adapter 적용 지점을 연결한 프로젝트 수준의 설명도입니다.
+
 ```mermaid
 flowchart TD
     A[Reasoning trace] --> B[Failure analysis]
