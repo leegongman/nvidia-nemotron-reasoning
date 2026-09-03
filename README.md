@@ -61,6 +61,24 @@ NVIDIA Nemotron Model Reasoning Challenge를 계기로 진행한 reasoning adapt
 - adapter namespace와 target module 차이에서 발생하는 training-serving mismatch
 - weak domain을 보강할 때 기존 domain 성능이 손상되는 현상
 
+## System Architecture
+
+```mermaid
+flowchart TD
+    A[Reasoning trace] --> B[Failure analysis]
+    B --> C[Decision point extraction]
+    C --> D[Token/mask SFT staging]
+    D --> E[Auxiliary data mixing]
+    E --> F[RSP dataset builder]
+    F --> G[Static dataset verifier]
+    G --> H[Train-only rank-32 LoRA]
+    H --> I[Adapter structure gate]
+    I --> J[Local evaluation]
+    J --> K[Submission readiness decision]
+```
+
+Nemotron backbone과 adapter target 구조는 [Architecture](docs/architecture.md)에서 별도 도식으로 설명합니다.
+
 ## Data Design
 
 학습 데이터는 일반 text JSONL이 아니라 token/mask 기반 corpus를 중심으로 구성했습니다.
@@ -94,7 +112,7 @@ NVIDIA Nemotron Model Reasoning Challenge를 계기로 진행한 reasoning adapt
 
 | 항목 | 설정 |
 | --- | --- |
-| Base model | NVIDIA Nemotron 3 Nano 30B A3B BF16 |
+| Base model | [NVIDIA Nemotron 3 Nano 30B A3B BF16](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16) |
 | LoRA | r=32, alpha=32, dropout=0.0 |
 | Target | attention/projection/MLP module 및 lm_head |
 | Sequence length | 8,192 |
@@ -106,7 +124,7 @@ NVIDIA Nemotron Model Reasoning Challenge를 계기로 진행한 reasoning adapt
 
 ## NVIDIA Technology
 
-- NVIDIA Nemotron 3 Nano 30B A3B BF16 base model
+- [NVIDIA Nemotron 3 Nano 30B A3B BF16](https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16) base model
 - Nemotron-H의 Mamba/MoE 구조와 expert parameter target 분석
 - NVIDIA GPU 환경에서 BF16 training 및 CUDA kernel 검증
 - mamba_ssm, causal_conv1d runtime dependency
