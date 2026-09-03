@@ -30,3 +30,7 @@
 ## Historical Placement
 
 기록된 competition placement는 **275 / 4,183 (상위 약 6.6%)**입니다. 이는 당시 제출 기록을 나타내는 historical placement이며, 현재 공개 저장소에서 최종 adapter와 leaderboard 결과를 재현했다는 의미는 아닙니다.
+
+## External Data Source
+
+핵심 token/mask corpus는 [Tong Huikang의 공개 Nemotron repository](https://github.com/tonghuikang/nemotron)에 기록된 category별 reasoning generation 및 corpus construction pipeline에서 생성된 데이터를 기반으로 사용했습니다. 이 repository는 NVIDIA Nemotron Model Reasoning Challenge의 Progress Prize winning submission으로 소개되어 있으며, 본 프로젝트는 원본 데이터 제작과 우리 측 replay·mixing·adapter 실험을 구분합니다.

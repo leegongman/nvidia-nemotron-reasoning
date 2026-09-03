@@ -6,6 +6,7 @@
 
 - NVIDIA Nemotron adapter challenge 이해
 - 기록된 competition placement: 275 / 4,183 (상위 약 6.6%)
+- 외부 Nemotron corpus provenance 및 attribution 문서화
 - token/mask SFT 구조 분석
 - 데이터셋 재구성 및 보조 데이터 mixing 실험
 - PEFT/LoRA 기반 adapter 학습 pipeline

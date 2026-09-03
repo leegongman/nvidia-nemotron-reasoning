@@ -86,6 +86,8 @@ Nemotron 모델 구조 시각화 자료와 adapter target 설명은 [Nemotron Mo
 
 학습 데이터는 일반 text JSONL이 아니라 token/mask 기반 corpus를 중심으로 구성했습니다.
 
+핵심 source corpus는 [Tong Huikang의 공개 Nemotron repository](https://github.com/tonghuikang/nemotron)에 기록된 데이터 생성 pipeline에서 만들어진 corpus를 기반으로 사용했습니다. 이 저장소는 해당 원본 데이터의 제작자라고 주장하지 않으며, 원본 corpus의 구조를 분석한 뒤 replay·auxiliary mixing·domain weighting·RSP 재구성을 진행했습니다. 구성 규칙과 provenance는 [Dataset](docs/dataset.md)에 정리했습니다.
+
     tokens = prompt tokens + assistant reasoning + final answer
     mask   = 0              + 1                  + 1
 
